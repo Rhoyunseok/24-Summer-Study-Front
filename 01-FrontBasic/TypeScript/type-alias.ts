@@ -46,3 +46,22 @@ function calculate(a: number, b: number, func: calFuncType): number {
 
 console.log("calculate : 10 + 5 = ", calculate(10, 5, plus));
 console.log("calculate : 10 - 5 = ", calculate(10, 5, minus));
+
+//함수 파라메터인수와 반환값을 위한 type 정의
+type OperationInput = {
+    a: number;
+    b: number;
+};
+
+type OperationOutput = {
+    result: number;
+};
+
+function addNumbers(input: OperationInput): OperationOutput {
+    const {a, b} = input;
+    return {result: a + b};
+}
+
+const input: OperationInput = {a: 10, b: 20};
+const output: OperationOutput = addNumbers(input);
+console.log("output:", output); // {result: 30}
