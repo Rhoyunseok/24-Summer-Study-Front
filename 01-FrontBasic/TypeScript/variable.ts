@@ -6,6 +6,10 @@ const isMale: boolean = true;
 
 let totalPayPrice: number = 0;
 
+
+//함수가 반환값이 없을경우 void를 사용합니다.
+//함수에 전달되는 파라메터에도 타입을 지정합니다.
+//함수의 결과값에는 void 값을 할당합니다.
 function showTotalPrice(p: number, count: number): void {
   totalPayPrice = p * count;
   console.log(`totalPayPrice: ${totalPayPrice}`);
