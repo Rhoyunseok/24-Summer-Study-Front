@@ -7,6 +7,17 @@
   min-height: 100vh;
 }
 
+/* 개발자 정의 클래스 정의하기  */
+.sample1 {
+  background-color: #f0f0f0;
+  color: 'red';
+  font-size: 20px;
+  font-weight: bold;
+  padding: 10px;
+  border-radius: 10px;
+  margin: 10px;
+}
+
 .description {
   display: inherit;
   justify-content: inherit;
@@ -97,7 +108,7 @@
 
 .center::before,
 .center::after {
-  content: "";
+  content: '';
   left: 50%;
   position: absolute;
   filter: blur(45px);
