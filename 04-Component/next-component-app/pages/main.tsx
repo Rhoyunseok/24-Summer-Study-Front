@@ -8,6 +8,7 @@ const inter = Inter({ subsets: ['latin'] });
 import Header from '@/components/header';
 import LogoContents from '@/components/logo-contents';
 import Guide from '@/components/guide';
+import { url } from 'inspector';
 
 // type Guide = {
 //   href: string;
@@ -21,6 +22,9 @@ import Guide from '@/components/guide';
 // }
 
 function Main() {
+  //next.js 로고 이미지 경로 데이터 정의
+  const logoPath = '/next.svg';
+
   const guides: GuideType[] = [
     {
       href: 'https://nextjs.org',
@@ -44,14 +48,19 @@ function Main() {
     },
   ];
 
+  //자식 컴포넌트에서 발생한 이벤트 처리 함수
+  const handleChildClick = (url: string) => {
+    console.log('이동할 url데이터 : ', url);
+  };
+
   return (
     <main
       className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
     >
       {/* 헤더 컴포넌트 영역 */}
-      <Header />
+      <Header mainPage="pages/main.tsx" onClick={handleChildClick} />
       {/* 로고 컴포넌트 영역 */}
-      <LogoContents />
+      <LogoContents logoPath={logoPath} />
       {/* 가이드 컴포넌트 영역-Props방식으로 자식 컴포넌트에게 읽기 전용 데이터를 전달 */}
       <Guide guides={guides} />
     </main>
