@@ -1,4 +1,4 @@
-import { NextPage } from 'next';
+import { NextPage } from "next";
 
 import {
   CalendarIcon,
@@ -7,32 +7,32 @@ import {
   FolderIcon,
   HomeIcon,
   UsersIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
 const navigation = [
-  { name: 'Home', href: '/', icon: HomeIcon, count: '5', current: true },
-  { name: 'Profile', href: '/mypage/profile', icon: UsersIcon, current: false },
+  { name: "Home", href: "/", icon: HomeIcon, count: "5", current: true },
+  { name: "Profile", href: "/mypage/profile", icon: UsersIcon, current: false },
   {
-    name: 'Blogs',
-    href: '/blogs',
+    name: "Blogs",
+    href: "/blogs",
     icon: DocumentDuplicateIcon,
     current: false,
   },
 ];
 
 function classNames(...classes) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
-import Header from '@/components/header';
-import Container from '@/components/container';
-import Footer from '@/components/footer';
+import Header from "@/components/header";
+import Container from "@/components/container";
+import Footer from "@/components/footer";
 
 type MyPageLayoutProps = {
   children: React.ReactNode;
 };
 
-const MyPageLayout: NextPage<MyPageLayoutProps> = props => {
+const MyPageLayout: NextPage<MyPageLayoutProps> = (props) => {
   return (
     <Container>
       <Header />
@@ -48,23 +48,23 @@ const MyPageLayout: NextPage<MyPageLayoutProps> = props => {
                   <ul role="list" className="flex flex-1 flex-col gap-y-7">
                     <li>
                       <ul role="list" className="-mx-2 space-y-1">
-                        {navigation.map(item => (
+                        {navigation.map((item) => (
                           <li key={item.name}>
                             <a
                               href={item.href}
                               className={classNames(
                                 item.current
-                                  ? 'bg-gray-50 text-indigo-600'
-                                  : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600',
-                                'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6',
+                                  ? "bg-gray-50 text-indigo-600"
+                                  : "text-gray-700 hover:bg-gray-50 hover:text-indigo-600",
+                                "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6"
                               )}
                             >
                               <item.icon
                                 className={classNames(
                                   item.current
-                                    ? 'text-indigo-600'
-                                    : 'text-gray-400 group-hover:text-indigo-600',
-                                  'h-6 w-6 shrink-0',
+                                    ? "text-indigo-600"
+                                    : "text-gray-400 group-hover:text-indigo-600",
+                                  "h-6 w-6 shrink-0"
                                 )}
                                 aria-hidden="true"
                               />
