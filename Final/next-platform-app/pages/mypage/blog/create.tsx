@@ -1,6 +1,74 @@
+//백엔드 RESTFul API 통신을 위한 axios 라이브러리 참조하기
+import axios from 'axios';
+
+import { useState } from 'react';
+import { useRouter } from 'next/router';
+import { ICreateBlog } from '@/interfaces/blog';
+
 const BlogCreate = () => {
+  const router = useRouter();
+  const [blog, setBlog] = useState<ICreateBlog>({
+    title: '',
+    contents: '',
+    display: 1,
+  });
+
+  const blogChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
+    setBlog({
+      ...blog,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  //신규 게시글 정보 백엔드 api로 전달해서 등록처리 한다.
+  const blogSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); //form submit 이벤트 취소처리
+
+    //axios 나 fetch() 를 통해 백엔드 RESTFul API 호출하기
+
+    try {
+      //case1) axios 라이브러리를 사용한 RESTFul API 호출하기
+      //axios.post('백엔드API호출주소', 전달할데이터객체);
+      // const response = await axios.post(
+      //   'http://localhost:5000/api/article/create',
+      //   blog,
+      // );
+
+      // console.log('블로깅 등록 결과', response.data);
+      // const result = response.data;
+
+      // if (result.code === 200) {
+      //   alert('블로깅이 등록되었습니다!');
+      //   router.push('/mypage/blog/list');
+      // } else {
+      //   console.error('백엔드 에러 발생', response.data.msg);
+      // }
+
+      //case2) fetch() 함수를 사용한 RESTFul API 호출하기
+      const response = await fetch('http://localhost:5000/api/article/create', {
+        method: 'POST',
+        body: JSON.stringify(blog),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const result = await response.json();
+      if (result.code == 200) {
+        alert('블로깅이 등록되었습니다!');
+        router.push('/mypage/blog/list');
+      } else {
+        console.error('블로깅 등록 중 에러 발생\n', result.msg);
+      }
+    } catch (error) {
+      console.error('블로깅 등록 중 에러 발생', error);
+    }
+  };
   return (
-    <form>
+    <form onSubmit={blogSubmit}>
       <div className="space-y-12">
         <div className="border-b border-gray-900/10 pb-12">
           <h2 className="text-base font-semibold leading-7 text-gray-900">
@@ -13,7 +81,7 @@ const BlogCreate = () => {
           <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
             <div className="sm:col-span-4">
               <label
-                htmlFor="username"
+                htmlFor="title"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
                 글제목
@@ -21,11 +89,12 @@ const BlogCreate = () => {
               <div className="mt-2">
                 <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 sm:max-w-md">
                   <input
-                    id="username"
-                    name="username"
+                    id="title"
+                    name="title"
                     type="text"
-                    placeholder="janesmith"
-                    autoComplete="username"
+                    value={blog.title}
+                    onChange={blogChange}
+                    placeholder="제목을 입력해주세요"
                     className="block flex-1 border-0  bg-transparent py-1.5 pl-3 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                   />
                 </div>
@@ -34,45 +103,49 @@ const BlogCreate = () => {
 
             <div className="col-span-full">
               <label
-                htmlFor="about"
+                htmlFor="contents"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
                 글내용
               </label>
               <div className="mt-2">
                 <textarea
-                  id="about"
-                  name="about"
-                  rows={3}
+                  id="contents"
+                  name="contents"
+                  rows={5}
+                  value={blog.contents}
+                  onChange={blogChange}
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  defaultValue={''}
                 />
               </div>
             </div>
 
             <div className="sm:col-span-3">
               <label
-                htmlFor="country"
+                htmlFor="display"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
                 게시여부
               </label>
               <div className="mt-2">
                 <select
-                  id="country"
-                  name="country"
-                  autoComplete="country-name"
+                  id="display"
+                  name="display"
+                  value={blog.display}
+                  onChange={e => {
+                    setBlog({ ...blog, display: Number(e.target.value) });
+                  }}
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                 >
-                  <option>게시함</option>
-                  <option>게시안함</option>
+                  <option value="0">게시함</option>
+                  <option value="1">게시안함</option>
                 </select>
               </div>
             </div>
 
             <div className="col-span-full">
               <label
-                htmlFor="country"
+                htmlFor="file"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
                 첨부파일
@@ -80,6 +153,8 @@ const BlogCreate = () => {
               <div className="mt-2">
                 <input
                   type="file"
+                  name="file"
+                  id="file"
                   className="block border border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400
     file:bg-gray-50 file:border-0
     file:me-4
@@ -96,6 +171,9 @@ const BlogCreate = () => {
         <button
           type="button"
           className="text-sm font-semibold leading-6 text-gray-900"
+          onClick={() => {
+            router.push('/mypage/blog/list');
+          }}
         >
           Cancel
         </button>
