@@ -1,4 +1,7 @@
-import { GetServerSideProps } from "next";
+//import { GetServerSideProps } from "next";
+//신규회원가입 페이지 컴포넌트
+//호출주소 : http://localhost:3000/regist
+//회원가입 페이지
 
 const Regist = () => {
   return (
@@ -89,7 +92,7 @@ const Regist = () => {
           </form>
 
           <p className="mt-10 text-center text-sm text-gray-500">
-            Already a member?{" "}
+            Already a member?{' '}
             <a
               href="#"
               className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500"
