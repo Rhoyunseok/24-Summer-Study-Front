@@ -1,7 +1,35 @@
 import { useRouter } from 'next/router';
+import { useState, useEffect } from 'react';
+import { IBlog } from '@/interfaces/blog';
+import axios from 'axios';
+
+//주석처리한 아랫줄은 ssr방식으로 데이터를 조회하는 방식이다.
+// const BlogList = ({ blogs }: { blogs: IBlog[] }) => {
 
 const BlogList = () => {
   const router = useRouter();
+  //게시글 목록 데이터 상태 정의
+  //CSR-Client Side Rnedering시에만 사용 : 게시글 목록 데이터 상태 정의
+  const [blogs, setBlogs] = useState<IBlog[]>([]);
+  //CSR방식으로 최초 화면 랜더링(마운트)시 웹브라우저 서버 RESTFUL API 호출 게시글 목록 조회 바인딩 처리하기
+  useEffect(() => {
+    //axios 방식으로 백엔드 RESTFul API 호출하기
+    getBlogList();
+  }, []);
+
+  //비동기 방식으로 백엔드 게시글 목록 데이터 호출함수
+  async function getBlogList() {
+    try {
+      const res = await axios.get('http://localhost:5000/api/article/list');
+      if (res.data.code == 200) {
+        setBlogs(res.data.data);
+      } else {
+        console.error('블로깅 목록 조회 api 에러', res.data.msg);
+      }
+    } catch (err) {
+      console.error('블로깅 목록 조회 api 에러', err);
+    }
+  }
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center">
@@ -59,23 +87,25 @@ const BlogList = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                <tr>
-                  <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
-                    1
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    게시글 제목입니다.
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    게시중
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    111.111.111.111
-                  </td>
-                  <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                    2024-08-19 15:30
-                  </td>
-                </tr>
+                {blogs.map((blog, index) => (
+                  <tr key={index}>
+                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
+                      {blog.article_id}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      {blog.title}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      {blog.is_display_code == 1 ? '게시중' : '게시안함'}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      {blog.ip_address}
+                    </td>
+                    <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                      {blog.reg_date}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -84,5 +114,16 @@ const BlogList = () => {
     </div>
   );
 };
+
+//SSR방식으로 최초 화면 랜더링시 서버에서 데이터를 조회하고 서버에서 HTML소스를 생성해서 가져온다.
+// export const getServerSideProps = async () => {
+//   const res = await fetch('http://localhost:5000/api/article/list');
+//   const result = await res.json();
+
+//   return {
+//     //백엔드에서 게시글 데이터를 조회해와서 해당 컴포넌트의 props 데이터로 파라메터를 형식으로 전달한다.
+//     props: { blogs: result.data },
+//   };
+// };
 
 export default BlogList;
