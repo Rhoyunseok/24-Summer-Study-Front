@@ -1,47 +1,38 @@
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { IBlog, IBlogFile } from '@/interfaces/blog';
+import { get } from 'http';
 
 const Gallary = () => {
   //모델 타입과 프롬프트 상태값 정의하기
+
   const [model, setModel] = useState<string>('dall-e-3');
 
   //사용자 프롬프트 텍스트 상태값
   const [prompt, setPrompt] = useState<string>('');
 
   //이미지 정보 목록 상태값 정의하기
-  const [fileList, setFileList] = useState<IBlogFile[]>([
-    {
-      article_id: 1,
-      file_id: 1,
-      title: 'dalle-e-3',
-      contents: '비가 오는 날 싸우는 고양이 두 마리',
-      file_path: 'http://localhost:5000/ai/sample-1724137533332.png',
-      file_name: '이미지1',
-      reg_member_id: 1,
-      reg_member_name: 'Eddy',
-    },
-    {
-      article_id: 2,
-      file_id: 2,
-      title: 'dalle-e-3',
-      contents: '두번째 아무거나 아무거나 아무거나',
-      file_path: 'http://localhost:5000/ai/sample-1724137533332.png',
-      file_name: '이미지2',
-      reg_member_id: 1,
-      reg_member_name: 'Eddy',
-    },
-    {
-      article_id: 3,
-      file_id: 3,
-      title: 'dalle-e-3',
-      contents: '아무거나 아무거나아무거나 프롬프트인가 뭐시긴ㄴ가',
-      file_path: 'http://localhost:5000/ai/sample-1724137533332.png',
-      file_name: '이미지3',
-      reg_member_id: 3,
-      reg_member_name: 'Eddy',
-    },
-  ]);
+  const [fileList, setFileList] = useState<IBlogFile[]>([]);
+
+  //최초로 화면이 렌더링되는 마운팅 시점(최초1회)에서 백엔드 API 호출하기
+  useEffect(() => {
+    //최초화면이 표시되는 시점에 백엔드 API 호출하기
+    getBlogFiles();
+  }, []);
+
+  //백엔드에서 이미지 목록 데이터를 가져오는 비동기 함수기능정의
+  async function getBlogFiles() {
+    //fetch 함수를 통해 백엔드 API 호출하기
+    const response = await fetch('http://localhost:5000/api/openai/all', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const resultData = await response.json();
+    console.log('백엔드에서 전달해준 결과값 : ', resultData);
+    setFileList(resultData.data as IBlogFile[]);
+  }
 
   //이미지 생성요청 함수 정의하기
   const generateSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -59,6 +50,9 @@ const Gallary = () => {
     });
     const resultData = await response.json();
     console.log('백엔드에서 전달해준 결과값 : ', resultData);
+
+    //이미지 생성 요청 후 이미지 목록을 다시 조회하기
+    await getBlogFiles();
   };
 
   return (
@@ -111,7 +105,7 @@ const Gallary = () => {
               <h3 className="mt-4 font-medium text-gray-900">{file.title}</h3>
               <p className="italic text-gray-500">{file.contents}</p>
               <p className="mt-2 font-medium text-gray-900">
-                {file.reg_member_id}
+                {file.reg_member_name}
               </p>
             </a>
           ))}
