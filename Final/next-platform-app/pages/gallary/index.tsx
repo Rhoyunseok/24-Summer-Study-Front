@@ -53,6 +53,10 @@ const Gallary = () => {
 
     //이미지 생성 요청 후 이미지 목록을 다시 조회하기
     await getBlogFiles();
+
+    //이미지 생성후 초기값으로 초기화
+    setPrompt('');
+    setModel('dall-e-3');
   };
 
   return (
@@ -102,8 +106,10 @@ const Gallary = () => {
                   className="h-full w-full object-cover object-center"
                 />
               </div>
-              <h3 className="mt-4 font-medium text-gray-900">{file.title}</h3>
-              <p className="italic text-gray-500">{file.contents}</p>
+              <h3 className="mt-4 font-medium text-gray-900">
+                {file.contents}
+              </h3>
+              <p className="italic text-gray-500">{file.title}</p>
               <p className="mt-2 font-medium text-gray-900">
                 {file.reg_member_name}
               </p>
