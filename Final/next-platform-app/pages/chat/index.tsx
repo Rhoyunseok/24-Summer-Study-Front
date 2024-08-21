@@ -131,7 +131,6 @@ const Chat = () => {
                       </div>
                     </div>
                   </div> */}
-
                   {/* 오른쪽 본인 메시지 출력영역 */}
                   {/* <div className="col-start-6 col-end-13 p-3 rounded-lg">
                     <div className="flex items-center justify-start flex-row-reverse">
