@@ -1,11 +1,18 @@
 // import { GetServerSideProps } from 'next';
 
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { ILoginMember } from '@/interfaces/member';
 import { useRouter } from 'next/router';
+//전역 컨텍스트 참조하기
+import { GlobalContext } from '@/library/globalContext';
 
 const Login = () => {
   const router = useRouter();
+
+  //전역 상태값 변경을 위한 컨텍스트 객체 생성
+  //전역 상태값을 불러오거나 값을 변경할 수 있게 변수와 세터함수 참조하기
+  const { globalData, setGlobalData } = useContext(GlobalContext);
+
   //로그인 사용자 정보 상태관리 데이터 초기화
   const [member, setMember] = useState<ILoginMember>({
     email: '',
@@ -39,7 +46,9 @@ const Login = () => {
         console.log('로그인성공', result);
         //로그인 성공시 로그인 사용자 정보를 쿠키에 저장처리
         //이유 : 새로고침시 로그인 정보가 초기화되는 문제를 해결하기 위함
-        localStorage.setItem('token', result.data);
+        localStorage.setItem('token', result.data.token);
+        //로그인한 사용자 정보를 전역상태의 member속성값으로 저장하기
+        setGlobalData({ ...globalData, member: result.data.member });
         router.push('/'); //로그인 성공시 메인페이지로 이동처리
       } else {
         if (result.code === 400 && result.msg === 'NotExistEmail') {
