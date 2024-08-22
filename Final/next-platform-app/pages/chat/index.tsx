@@ -78,11 +78,11 @@ const Chat = () => {
     console.log('현재 접속한 채널번호 : ', channel);
     if (channel > 0) {
       //채팅방에 입장하기
-      // socket.emit('join', { member_id: memberId, channel: channel });
-      socket.emit('join', {
-        member_id: globalData.member.member_id,
-        channel: channel,
-      });
+      // // socket.emit('join', { member_id: memberId, channel: channel });
+      // socket.emit('join', {
+      //   member_id: globalData.member.member_id,
+      //   channel: channel,
+      // });
     }
   }, [channel]);
 
@@ -105,16 +105,6 @@ const Chat = () => {
     //소케 시스템 이벤트
     socket.on('connect', () => {
       console.log('정상적으로 서버소켓과 연결이 완료됨');
-
-      //사용자 채팅방에 입장하기
-      //
-      if (channel > 0) {
-        //채팅방에 입장하기
-        socket.emit('join', {
-          member_id: globalData.member.member_id,
-          channel: channel,
-        });
-      }
     });
 
     //서버 소켓이 끊어진경우 발생하는 이벤트

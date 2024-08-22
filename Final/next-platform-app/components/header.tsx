@@ -45,13 +45,20 @@ const Header = () => {
         </div>
         <div className="hidden lg:flex lg:gap-x-12">
           {navigation.map(item => (
-            <a
+            // <a
+            //   key={item.name}
+            //   href={item.href}
+            //   className="text-sm font-semibold leading-6 text-gray-900"
+            // >
+            //   {item.name}
+            // </a> //전역데이터에서는 a태그를 사용하면 안됨 (Link 컴포넌트 사용)
+            <Link
               key={item.name}
               href={item.href}
               className="text-sm font-semibold leading-6 text-gray-900"
             >
               {item.name}
-            </a>
+            </Link>
           ))}
         </div>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">
@@ -107,13 +114,20 @@ const Header = () => {
             <div className="-my-6 divide-y divide-gray-500/10">
               <div className="space-y-2 py-6">
                 {navigation.map(item => (
-                  <a
+                  // <a
+                  //   key={item.name}
+                  //   href={item.href}
+                  //   className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                  // >
+                  //   {item.name}
+                  // </a>
+                  <Link
                     key={item.name}
                     href={item.href}
                     className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
                   >
                     {item.name}
-                  </a>
+                  </Link>
                 ))}
               </div>
               <hr></hr>

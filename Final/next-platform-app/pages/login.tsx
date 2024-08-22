@@ -48,7 +48,7 @@ const Login = () => {
         //이유 : 새로고침시 로그인 정보가 초기화되는 문제를 해결하기 위함
         localStorage.setItem('token', result.data.token);
         //로그인한 사용자 정보를 전역상태의 member속성값으로 저장하기
-        setGlobalData({ ...globalData, member: result.data.member });
+        setGlobalData(result.data.member);
         router.push('/'); //로그인 성공시 메인페이지로 이동처리
       } else {
         if (result.code === 400 && result.msg === 'NotExistEmail') {
@@ -118,7 +118,7 @@ const Login = () => {
                 </label>
                 <div className="text-sm">
                   <a
-                    href="#"
+                    href="/"
                     className="font-semibold text-indigo-600 hover:text-indigo-500"
                   >
                     Forgot password?
