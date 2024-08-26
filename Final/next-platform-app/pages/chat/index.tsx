@@ -1,10 +1,14 @@
-//사용자간 기초 채팅기능 구현 컴포넌트
-import { useState, useEffect, use } from 'react';
-import { useContext } from 'react';
-import { IMessage } from '@/interfaces/message';
-import { useRouter } from 'next/router';
+//사용자간 기초 채팅기능구현 컴포넌트
+import { useState, useEffect, useContext } from 'react';
+
+//전역컨텍스트 참조하기
 import { GlobalContext } from '@/library/globalContext';
-//채팅 클라이언트 소켓 객체 생성
+
+import { useRouter } from 'next/router';
+
+import { IMessage } from '@/interfaces/message';
+
+//채팅 클라이언트 socket객체 참조하기
 import { socket } from '@/library/socket';
 
 //채팅 컴포넌트 정의
@@ -12,19 +16,11 @@ const Chat = () => {
   //라우터 객체 생성
   const router = useRouter();
 
-  //전역 상태값에서 로그인한 사용자의 정보 조회하기 위해 컨택스트 객체 생성
+  //전역 상태값에서 로그인한 사용자의 정보 조회하기 위해 컨텍스트 객체 생성
   const { globalData, setGlobalData } = useContext(GlobalContext);
 
-  //현재 사용자 고유번호 상태값 정의
-  // const [memberId, setMemberId] = useState<number>(1); //채팅방할때 필요 없음
-
+  //사용자 인증토큰정보 관리 상태값 정의하기
   const [memberToken, setMemberToken] = useState<string>('');
-
-  //웹브라우저 저장소에 저장된 서버에서 발그해준 JWT 사용자 인증정보 토큰 추출하기
-  const token = localStorage.getItem('token');
-  if (token == undefined) {
-    router.push('/login');
-  }
 
   //현재 접속채널 상태값 정의하기
   const [channel, setChannel] = useState<number>(0);
@@ -33,109 +29,98 @@ const Chat = () => {
   const [message, setMessage] = useState<string>('');
 
   //채팅 메시지 목록(채팅이력정보) 상태값 정의하기
-  const [messageList, setMessageList] = useState<IMessage[]>([
-    //test data
-    {
-      member_id: 1,
-      name: '채팅자1',
-      profile: 'http://localhost:5000/img/user1.png',
-      message: '안녕하세요',
-      send_date: '2024-08-21 10:38:00',
-    },
-    {
-      member_id: 2,
-      name: '채팅자2',
-      profile: 'http://localhost:5000/img/user2.png',
-      message: '하이루',
-      send_date: '2024-08-21 10:39:00',
-    },
-    {
-      member_id: 3,
-      name: '채팅자3',
-      profile: 'http://localhost:5000/img/user3.png',
-      message: '방가방가',
-      send_date: '2024-08-21 10:40:00',
-    },
-  ]);
+  const [messageList, setMessageList] = useState<IMessage[]>([]);
 
-  //useEffect훅은 CSR 환경에서 작동되고 과 useRoter훅은 기본적으로 SSR/CSR순서로 2번 작동되므로
-  //useEffect훅에서 userRouter훅이용해 URL키값을 추출안되는 문제는 userRouter.isReady값을 이용해 해결가능
-  //userRouter.isReady 값이 기본은 false->true 로 변경되는 시점에 관련 기능 구현하면됨...
+  //useEffect훅은 CSR환경에서 작동되고 userRouter훅은 SSR/CSR순서로 2번작동됨.
+  //useEffect훅에서 userRouter훅이용해 URL키값이 추출안되는 문제는  useRouter.isReady값을 이용해 해결가능
+  //useRouter.isReady 값이 기본은 false->true로 변경되는 시점에 관련 기능 구현하면됨..
   useEffect(() => {
-    console.log('현재 URL 채널번호  추출하기 : ', router.query.cid);
-
-    if (router.query.id != undefined) {
-      setChannel(Number(router.query.cid)); //query.id는 string으로 전달되므로 숫자로 변환
-    } else {
-      alert('????');
+    console.log('현재 URL주소에서 채널번호 추출하기:', router.query.cid);
+    //URL주소를통해 사용자 고유번호가 전달된 경우에만 실행
+    if (router.query.cid != undefined) {
+      //현재 채널 고유번호 상태값 설정해주기
+      setChannel(Number(router.query.cid));
     }
   }, [router.isReady]);
 
   //현재 접속 채널정보가 변경될때마다 실행되는 useEffect함수
-  //채널번호가 바뀌면 바뀐 번호 채널로 채팅방에 입장하기 처리
+  //채널번호가 바뀌면 바뀐번호 채널로 채팅방에 입장하기 처리
   useEffect(() => {
     //채팅방 입장처리하기
-    console.log('현재 접속한 채널번호 : ', channel);
+    console.log('채팅방 채널이 변경되었습니다.', channel);
     if (channel > 0) {
-      //채팅방에 입장하기
-      // // socket.emit('join', { member_id: memberId, channel: channel });
-      // socket.emit('join', {
-      //   member_id: globalData.member.member_id,
-      //   channel: channel,
-      // });
+      console.log('채팅방에 입장합니다.', channel);
+      //해당 변경된 채팅방에 입장처리하기
+      socket.emit('entry', channel.toString(), globalData.member);
     }
   }, [channel]);
 
-  //최초1회 화면이 렌더링되는 시점(마운팅)에 실행되는 useEffect함수
-  //프로젝트 루트에 next.config.mjs 에서 reactStrictMode: false 로 변경해야 정확히 1회만 실행됨
-  //채팅서버와 연결되는 클라이언트 채팅 소켓 객체 생성및 각종 채팅 이벤트 기능 구현영역
+  //최초 1회 화면이 렌더링되는 시점(마운팅되는시점)에 실행되는 useEffect함수
+  //프로젝트 루트에 next.config.mjs파일내 reactStrictMode(엄격모드)값을 false로 변경해야 정확히 1회만 실행됨
+  //채팅서버와 연결되는 클라이언트 채팅 소켓 객체 생성 및 각종 채팅 이벤트 기능 구현영역
   useEffect(() => {
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //웹브라우저 저장소에 저장된 서버에서 발급해준 JWT사용자인증정보 토큰추출하기
     const token = localStorage.getItem('token');
     if (token == undefined) {
       router.push('/login');
     }
 
+    console.log('전역 데이터 정보 확인하기:', globalData);
     setMemberToken(token as string);
-    //최초 화면이 랜더링되는 시점(최초1회)에 서버 소켓 연결하기
+
+    //최초 화면이 렌더링되는 시점(최초1회)에 서버소켓 연결하기
     socket.connect();
-    //클라이언트 소켓과 연결이 **완료**되면 실행되는 이벤트처리함수
-    //서버 소켓과 연결이 완료되면 자동으로 connect 이벤트가 발생됨
-    //connect이벤트가 실행되면 처리하는 핸들러 함수를 정의하면됨
-    //소케 시스템 이벤트
+
+    //서버소켓과 연결이 완료되면 실행되는 이벤트처리함수
+    //서버 소켓과 연결이 완료되면 자동으로 client 소켓에서connect이벤트가 실행되고
+    //connect이벤트가 실행되면 처리할 이벤트 처리할 기능 구현
+    //소켓 시스템 이벤트
     socket.on('connect', () => {
-      console.log('정상적으로 서버소켓과 연결이 완료됨');
+      console.log('정상적으로 서버소켓과 연결이 완료되었습니다.');
+      console.log('전역 데이터 정보 확인하기:', globalData);
     });
 
-    //서버 소켓이 끊어진경우 발생하는 이벤트
-    //서버와의 연결 소켓이 끊어진 경우 처리할 기능을 핸들러 함수에서 처리합니다.
+    //disconnect 이벤트는 서버소켓이 끊어진경우 발생하는 이벤트
+    //서버와의 연결소켓이 끊어진경우 처리할 기능을 핸들러함수에서처리합니다.
     //소켓 시스템 이벤트
     socket.on('disconnect', () => {
-      console.log('서버소켓 연결이 끊어짐');
+      console.log('서버소켓 연결이 종료되었습니다.');
     });
 
     //개발자 정의 클라이언트 소켓 이벤트 수신기 정의하기
-    // socket.on('클라이언트 이벤트 수신기명', 서버에서 전달해준 데이터를 받는 함수);
-    socket.on('receiveAll', (msg: IMessage) => {
-      console.log('서버로부터 받은 메시지 확인 - receiveAll: ', msg);
+    //socket.on('클라이언트 이벤트 수신기명',서버에서 전달해준 데이터를 받는함수정의);
+    socket.on('receiveAll', function (msg: IMessage) {
+      console.log('서버소켓에서 전달된 데이터 확인-receiveAll:', msg);
       setMessageList(prev => [...prev, msg]);
     });
 
-    //해당 채팅 컴포넌트가 화면에서 사라질때 (언마우팅시점)
-    //소켓관련 이벤트를 모두 제거해줘야 합니다. 그렇지 않으면 메시지를 여러번 수신할 수 있음
+    //사용자 지정 채널 입장완료 이벤트 수신기
+    socket.on('entryOk', function (msg: IMessage) {
+      console.log('서버소켓에서 전달된 데이터 확인-receiveAll:', msg);
+      setMessageList(prev => [...prev, msg]);
+    });
+
+    //채팅채널별 메시지 수신기 정의 하기
+    socket.on('receiveChannel', function (msg: IMessage) {
+      console.log('서버소켓에서 전달된 데이터 확인-receiveChannel:', msg);
+      setMessageList(prev => [...prev, msg]);
+    });
+
+    //해당 채팅 컴포넌트가 화면에서 사라질때(언마운팅시점)
+    //소켓관련 이벤트를 모두 제거해워야합니다. 그렇지 않으면 메시지를 여러번 수신할수 있음
     return () => {
-      //socket.off('이벤트명') : 해당 이벤트 수신기를 제거하는 함수
-      socket.off('receiveAll');
+      //socket.off(클라이언트 이벤트 수신기명); //이벤트 제거
       socket.off('connect');
       socket.off('disconnect');
+      socket.off('receiveAll');
+      socket.off('entryOk');
+      socket.off('receiveChannel');
     };
   }, []);
 
-  //채팅 메시지 전송 이벤트 처리 함수
+  //채팅 메시지 전송 이벤트 처리함수
   const sendMessage = () => {
-    //채팅서버 소켓으로 메시지를 전송합니다.
-    // socket.emit('서버 이벤트 수신기명', 전달할 데이터);
-
+    //채팅서버소켓으로 메시지를 전송합니다.
     const msgData = {
       member_id: globalData.member.member_id,
       name: globalData.member.name,
@@ -144,9 +129,9 @@ const Chat = () => {
       send_date: Date.now().toString(),
     };
 
-    //채팅 서버소켓으로 메시지 전송하기
-    //socket.emit('서버 이벤트 수신기명', 전달할 데이터);
-    socket.emit('broadcast', msgData);
+    //socket.emit('서버 이벤트 수신기명',전달할 데이터);
+    //채팅서버소켓으로 메시지 전송하기
+    socket.emit('channelMsg', channel.toString(), msgData);
 
     //메시지 입력박스 초기화
     setMessage('');
@@ -190,7 +175,7 @@ const Chat = () => {
                           </div>
                           <div className="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl">
                             <div>{msg.message}</div>
-                            <div className="absolute w-[200px] text-left text-xs bottom-0 left-0 -mb-5 text-gray-500">
+                            <div className="absolute w-[200px] text-xs bottom-0 left-0 -mb-5 text-gray-500">
                               {msg.name} {msg.send_date}
                             </div>
                           </div>
@@ -210,6 +195,7 @@ const Chat = () => {
                       </div>
                     </div>
                   </div> */}
+
                   {/* 오른쪽 본인 메시지 출력영역 */}
                   {/* <div className="col-start-6 col-end-13 p-3 rounded-lg">
                     <div className="flex items-center justify-start flex-row-reverse">
@@ -251,7 +237,9 @@ const Chat = () => {
                     type="text"
                     name={message}
                     value={message}
-                    onChange={e => setMessage(e.target.value)}
+                    onChange={e => {
+                      setMessage(e.target.value);
+                    }}
                     className="flex w-full border rounded-xl focus:outline-none focus:border-indigo-300 pl-4 h-10"
                   />
                 </div>
